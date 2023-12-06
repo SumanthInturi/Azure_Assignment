@@ -1,0 +1,9 @@
+{
+	"name": "abt-adf-dev",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "42ae0897-c2c5-47c3-93c9-b1f54ed4935a",
+		"tenantId": "5c90ddac-41c6-456f-8ac6-8bc0facfe185"
+	}
+}
