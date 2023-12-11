@@ -1,0 +1,26 @@
+{
+	"name": "AzureSqlDatabaseMain",
+	"properties": {
+		"parameters": {
+			"SecretKey": {
+				"type": "string",
+				"defaultValue": "Sqlserver1"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().SecretKey",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}
