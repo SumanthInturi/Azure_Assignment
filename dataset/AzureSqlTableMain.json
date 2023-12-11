@@ -1,0 +1,39 @@
+{
+	"name": "AzureSqlTableMain",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabaseMain",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"SecretKey": {
+					"value": "@dataset().SecretKey",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"SecretKey": {
+				"type": "string"
+			},
+			"SchemaName": {
+				"type": "string"
+			},
+			"TableName": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().SchemaName",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().TableName",
+				"type": "Expression"
+			}
+		}
+	}
+}
