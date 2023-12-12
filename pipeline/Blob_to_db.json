@@ -1,5 +1,5 @@
 {
-	"name": "blob_to_sql_3",
+	"name": "Blob_to_db",
 	"properties": {
 		"activities": [
 			{
@@ -26,9 +26,10 @@
 						"parameters": {
 							"SecretKey": "Sqlserver1",
 							"SchemaName": "dbo",
-							"TableName": "Control_Object"
+							"TableName": "Control_table"
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
@@ -44,9 +45,14 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 1,
 					"activities": [
 						{
-							"name": "Copy data1",
+							"name": "Source_to_Stage",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -71,8 +77,13 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "Truncate table @{item().Destination_Schema_Name}.@{item().Destination_Table_Name}",
+										"type": "Expression"
+									},
 									"writeBehavior": "insert",
-									"sqlWriterUseTableLock": false
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
 								},
 								"enableStaging": false,
 								"translator": {
@@ -87,15 +98,123 @@
 							"inputs": [
 								{
 									"referenceName": "StorageActMain",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"StorageActSecretKey": {
+											"value": "@item().Source_Secret_Key",
+											"type": "Expression"
+										},
+										"FolderPath": {
+											"value": "@item().Source_Folder_Name",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@item().Source_File_Name",
+											"type": "Expression"
+										},
+										"ContainerName": {
+											"value": "@item().Source_Container_Name",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
 								{
 									"referenceName": "AzureSqlTableMain",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"SecretKey": {
+											"value": "@item().Db_Secret_Key",
+											"type": "Expression"
+										},
+										"SchemaName": {
+											"value": "@item().Destination_Schema_Name",
+											"type": "Expression"
+										},
+										"TableName": {
+											"value": "@item().Destination_Table_Name",
+											"type": "Expression"
+										}
+									}
 								}
 							]
+						},
+						{
+							"name": "Stage_to_Table",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "Source_to_Stage",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabaseMain",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"SecretKey": {
+										"value": "@item().Db_Secret_Key",
+										"type": "Expression"
+									}
+								}
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query"
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						},
+						{
+							"name": "Table _to_Dim",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "Stage_to_Table",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabaseMain",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"SecretKey": {
+										"value": "@item().Db_Secret_Key",
+										"type": "Expression"
+									}
+								}
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query"
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
 						}
 					]
 				}
