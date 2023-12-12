@@ -474,6 +474,9 @@
 				"defaultValue": "2021"
 			}
 		},
+		"folder": {
+			"name": "Assignment"
+		},
 		"annotations": [],
 		"lastPublishTime": "2023-12-06T08:02:59Z"
 	},

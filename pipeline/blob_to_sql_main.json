@@ -78,8 +78,13 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "@{concat('Tuncate','table',item().Destination_Schema_Name,'.',item().Destination_Table_Name)}",
+										"type": "Expression"
+									},
 									"writeBehavior": "insert",
-									"sqlWriterUseTableLock": false
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
 								},
 								"enableStaging": false,
 								"translator": {
@@ -136,6 +141,9 @@
 				}
 			}
 		],
+		"folder": {
+			"name": "Assignment"
+		},
 		"annotations": [],
 		"lastPublishTime": "2023-12-06T08:02:59Z"
 	},
