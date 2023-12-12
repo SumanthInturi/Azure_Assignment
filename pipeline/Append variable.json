@@ -1,0 +1,74 @@
+{
+	"name": "Append variable",
+	"properties": {
+		"activities": [
+			{
+				"name": "Append variable",
+				"type": "AppendVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "SampleArr",
+					"value": {
+						"value": "2",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Append variable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('SampleArr')",
+						"type": "Expression"
+					},
+					"batchCount": 1,
+					"activities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "temp",
+								"value": {
+									"value": "@item()",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"SampleArr": {
+				"type": "Array",
+				"defaultValue": [
+					"Sumanth"
+				]
+			},
+			"temp": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Activities/General"
+		},
+		"annotations": []
+	}
+}

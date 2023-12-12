@@ -1,0 +1,49 @@
+{
+	"name": "Delete",
+	"properties": {
+		"activities": [
+			{
+				"name": "Delete",
+				"type": "Delete",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "StorageActMain",
+						"type": "DatasetReference",
+						"parameters": {
+							"StorageActSecretKey": "storageact",
+							"FolderPath": "SwitchPath1",
+							"FileName": "sampletrue1.csv",
+							"ContainerName": "adfactivitiessamplediles"
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "AzureBlobStorage5",
+							"type": "LinkedServiceReference"
+						},
+						"path": "adfactivitiessamplediles/SwitchPath1/LogFiles"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": false,
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "Activities/General"
+		},
+		"annotations": []
+	}
+}

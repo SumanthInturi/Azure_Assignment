@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": "teacher_rating_ref.csv",
+				"fileName": "teacher_rating_re.csv",
 				"container": "adfactivitiessamplediles"
 			},
 			"columnDelimiter": ",",
