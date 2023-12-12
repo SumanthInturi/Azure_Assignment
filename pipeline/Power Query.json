@@ -1,0 +1,66 @@
+{
+	"name": "Power Query",
+	"properties": {
+		"activities": [
+			{
+				"name": "Power Query",
+				"type": "ExecuteWranglingDataflow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "powerquery1",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"UserQueryStorageActMain": {
+								"StorageActSecretKey": "storageact",
+								"FolderPath": "SampleFile",
+								"FileName": "SampleData.csv",
+								"ContainerName": "adfactivitiessamplediles"
+							}
+						}
+					},
+					"staging": {
+						"folderPath": ""
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"queries": [
+						{
+							"queryName": "UserQuery",
+							"dataflowSinks": [
+								{
+									"name": "UserQueryStorageActMain",
+									"dataset": {
+										"referenceName": "StorageActMain",
+										"type": "DatasetReference",
+										"parameters": {
+											"StorageActSecretKey": "storageact",
+											"FolderPath": "SampleFile",
+											"FileName": "SampleData.csv",
+											"ContainerName": "adfactivitiessamplediles"
+										}
+									},
+									"script": "sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tID as string,\n\t\tDate as string,\n\t\tFirstName as string,\n\t\tLastName as string,\n\t\tAddress as string\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> UserQueryStorageActMain"
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "Activities/Power Query"
+		},
+		"annotations": []
+	}
+}

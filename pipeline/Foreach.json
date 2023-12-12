@@ -1,0 +1,85 @@
+{
+	"name": "Foreach",
+	"properties": {
+		"activities": [
+			{
+				"name": "MyFilterActivity",
+				"type": "Filter",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.inputs",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@greater(item(),3)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "MyForEach",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "MyFilterActivity",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('MyFilterActivity').output.value",
+						"type": "Expression"
+					},
+					"isSequential": "false",
+					"batchCount": 1,
+					"activities": [
+						{
+							"name": "Set Variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "test",
+								"value": {
+									"value": "@string(item())",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"inputs": {
+				"type": "Array",
+				"defaultValue": [
+					1,
+					2,
+					3,
+					4,
+					5,
+					6
+				]
+			}
+		},
+		"variables": {
+			"test": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Activities/Iteration and Conditional"
+		},
+		"annotations": []
+	}
+}

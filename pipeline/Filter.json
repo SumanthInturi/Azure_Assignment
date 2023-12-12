@@ -1,0 +1,40 @@
+{
+	"name": "Filter",
+	"properties": {
+		"activities": [
+			{
+				"name": "Filter",
+				"type": "Filter",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.SampleArr",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@greater(item(),3)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"SampleArr": {
+				"type": "array",
+				"defaultValue": [
+					1,
+					2,
+					3,
+					4,
+					5,
+					6
+				]
+			}
+		},
+		"folder": {
+			"name": "Activities/Iteration and Conditional"
+		},
+		"annotations": []
+	}
+}

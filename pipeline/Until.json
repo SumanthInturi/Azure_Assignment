@@ -1,0 +1,46 @@
+{
+	"name": "Until",
+	"properties": {
+		"activities": [
+			{
+				"name": "Until_copy1",
+				"type": "Until",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@bool(variables('Sample'))",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Set variable_copy1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "Sample",
+								"value": "true"
+							}
+						}
+					],
+					"timeout": "0.12:00:00"
+				}
+			}
+		],
+		"variables": {
+			"Sample": {
+				"type": "String",
+				"defaultValue": "false"
+			}
+		},
+		"folder": {
+			"name": "Activities/Iteration and Conditional"
+		},
+		"annotations": []
+	}
+}
