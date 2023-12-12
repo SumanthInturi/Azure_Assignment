@@ -1,0 +1,248 @@
+{
+	"name": "DB_to_blob",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSqlTableMain",
+						"type": "DatasetReference",
+						"parameters": {
+							"SecretKey": "Sqlserver1",
+							"SchemaName": "dbo",
+							"TableName": "Control_table_DB_to_Blob"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 1,
+					"activities": [
+						{
+							"name": "Db_to_Blob",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "AzureSqlTableMain",
+									"type": "DatasetReference",
+									"parameters": {
+										"SecretKey": {
+											"value": "@item().DB_Secret_Key",
+											"type": "Expression"
+										},
+										"SchemaName": {
+											"value": "@item().Table_Schema_Name",
+											"type": "Expression"
+										},
+										"TableName": {
+											"value": "@item().Table_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "StorageActMain",
+									"type": "DatasetReference",
+									"parameters": {
+										"StorageActSecretKey": {
+											"value": "@item().Blob_Secret_Key",
+											"type": "Expression"
+										},
+										"FolderPath": {
+											"value": "@item().DB_Secret_Key",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@concat(item().Table_Name,'_',item().DB_Secret_Key,'.csv')",
+											"type": "Expression"
+										},
+										"ContainerName": {
+											"value": "@item().Blob_Container_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Archive_File",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Db_to_Blob",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "StorageActMain",
+									"type": "DatasetReference",
+									"parameters": {
+										"StorageActSecretKey": {
+											"value": "@item().Blob_Secret_Key",
+											"type": "Expression"
+										},
+										"FolderPath": {
+											"value": "@item().DB_Secret_Key",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@concat(item().Table_Name,'_',item().DB_Secret_Key,'.csv')",
+											"type": "Expression"
+										},
+										"ContainerName": {
+											"value": "@item().Blob_Container_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "StorageActMain",
+									"type": "DatasetReference",
+									"parameters": {
+										"StorageActSecretKey": {
+											"value": "@item().Blob_Secret_Key",
+											"type": "Expression"
+										},
+										"FolderPath": {
+											"value": "@concat(item().DB_Secret_Key,'/','Archive')",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@concat(item().Table_Name,'_',item().DB_Secret_Key,'_',utcnow(),'.csv')",
+											"type": "Expression"
+										},
+										"ContainerName": {
+											"value": "@item().Blob_Container_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"folder": {
+			"name": "Assignments"
+		},
+		"annotations": []
+	}
+}
