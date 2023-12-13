@@ -183,53 +183,11 @@
 							}
 						},
 						{
-							"name": "Table _to_Dim",
-							"type": "Script",
-							"dependsOn": [
-								{
-									"activity": "Stage_to_Table",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"linkedServiceName": {
-								"referenceName": "AzureSqlDatabaseMain",
-								"type": "LinkedServiceReference",
-								"parameters": {
-									"SecretKey": {
-										"value": "@item().Db_Secret_Key",
-										"type": "Expression"
-									}
-								}
-							},
-							"typeProperties": {
-								"scripts": [
-									{
-										"type": "Query",
-										"text": {
-											"value": "EXEC @{item().Temp_To_Dim_SP_Name} @{item().Destination_Temp_Table_Name}, @{item().Destination_Dim_Table}, '1900-01-01 00:00:00.000';",
-											"type": "Expression"
-										}
-									}
-								],
-								"scriptBlockExecutionTimeout": "02:00:00"
-							}
-						},
-						{
-							"name": "Lookup2",
+							"name": "Get_Last_Modified_Date",
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "Table _to_Dim",
+									"activity": "Temp_To_Dim",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -274,11 +232,11 @@
 							}
 						},
 						{
-							"name": "Script1",
-							"type": "Script",
+							"name": "Temp_To_Dim",
+							"type": "SqlServerStoredProcedure",
 							"dependsOn": [
 								{
-									"activity": "Lookup2",
+									"activity": "Stage_to_Table",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -292,24 +250,84 @@
 								"secureInput": false
 							},
 							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[Table_to_Dim]",
+								"storedProcedureParameters": {
+									"Source_Table_Name": {
+										"value": {
+											"value": "@item().Destination_Temp_Table_Name",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Destination_Table_Name": {
+										"value": {
+											"value": "@item().Destination_Dim_Table",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Delta_Watermark": {
+										"value": {
+											"value": "@item().Delta_Watermark",
+											"type": "Expression"
+										},
+										"type": "Datetime"
+									}
+								}
+							},
 							"linkedServiceName": {
 								"referenceName": "AzureSqlDatabaseMain",
 								"type": "LinkedServiceReference",
 								"parameters": {
 									"SecretKey": "Sqlserver1"
 								}
+							}
+						},
+						{
+							"name": "Update_HWM",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Get_Last_Modified_Date",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
 							},
+							"userProperties": [],
 							"typeProperties": {
-								"scripts": [
-									{
-										"type": "Query",
-										"text": {
-											"value": "Update [dbo].[Control_table]\nset Delta_Watermark = @{activity('Lookup2').output.firstRow.Last_Modified}\nwhere id = @{item().Id}",
+								"storedProcedureName": "[dbo].[UpdateControlTable]",
+								"storedProcedureParameters": {
+									"Id": {
+										"value": {
+											"value": "@item().Id",
 											"type": "Expression"
-										}
+										},
+										"type": "Int16"
+									},
+									"LastModified": {
+										"value": {
+											"value": "@activity('Get_Last_Modified_Date').output.firstRow.Last_Modified",
+											"type": "Expression"
+										},
+										"type": "String"
 									}
-								],
-								"scriptBlockExecutionTimeout": "02:00:00"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabaseMain",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"SecretKey": "Sqlserver1"
+								}
 							}
 						}
 					]
