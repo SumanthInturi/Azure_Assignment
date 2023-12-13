@@ -172,7 +172,8 @@
 							"typeProperties": {
 								"scripts": [
 									{
-										"type": "Query"
+										"type": "Query",
+										"text": "Exec Stage_to_Table 'SampleData_Stage','Id','SampleData_Destination_Table','Id';"
 									}
 								],
 								"scriptBlockExecutionTimeout": "02:00:00"
@@ -210,7 +211,8 @@
 							"typeProperties": {
 								"scripts": [
 									{
-										"type": "Query"
+										"type": "Query",
+										"text": "EXEC Table_to_Dim 'SampleData_Destination_Table', 'SampleData_Dim', '1900-01-01 00:00:00.000';"
 									}
 								],
 								"scriptBlockExecutionTimeout": "02:00:00"
