@@ -173,7 +173,10 @@
 								"scripts": [
 									{
 										"type": "Query",
-										"text": "Exec Stage_to_Table 'SampleData_Stage','Id','SampleData_Destination_Table','Id';"
+										"text": {
+											"value": "Exec @{item().Stage_To_Temp_SP_Name} @{item().Destination_Table_Name},@{item().Destination_Dim_Table_KeyColumn},@{item().Destination_Temp_Table_Name},@{item().Destination_Temp_Table_KeyColumn};",
+											"type": "Expression"
+										}
 									}
 								],
 								"scriptBlockExecutionTimeout": "02:00:00"
@@ -212,7 +215,98 @@
 								"scripts": [
 									{
 										"type": "Query",
-										"text": "EXEC Table_to_Dim 'SampleData_Destination_Table', 'SampleData_Dim', '1900-01-01 00:00:00.000';"
+										"text": {
+											"value": "EXEC @{item().Temp_To_Dim_SP_Name} @{item().Destination_Temp_Table_Name}, @{item().Destination_Dim_Table}, '1900-01-01 00:00:00.000';",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						},
+						{
+							"name": "Lookup2",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "Table _to_Dim",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "select Max(Updated_on) as Last_Modified from @{item().Destination_Temp_Table_Name}",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "AzureSqlTableMain",
+									"type": "DatasetReference",
+									"parameters": {
+										"SecretKey": {
+											"value": "@item().Db_Secret_Key",
+											"type": "Expression"
+										},
+										"SchemaName": {
+											"value": "@item().Destination_Schema_Name",
+											"type": "Expression"
+										},
+										"TableName": {
+											"value": "@item().Destination_Table_Name",
+											"type": "Expression"
+										}
+									}
+								}
+							}
+						},
+						{
+							"name": "Script1",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "Lookup2",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabaseMain",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"SecretKey": "Sqlserver1"
+								}
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "Update [dbo].[Control_table]\nset Delta_Watermark = @{activity('Lookup2').output.firstRow.Last_Modified}\nwhere id = @{item().Id}",
+											"type": "Expression"
+										}
 									}
 								],
 								"scriptBlockExecutionTimeout": "02:00:00"
