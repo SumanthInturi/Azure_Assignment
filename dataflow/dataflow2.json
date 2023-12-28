@@ -10,6 +10,41 @@
 						"type": "DatasetReference"
 					},
 					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "Excel1",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "Excel1",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "Excel2",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "Excel1",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				},
+				{
+					"dataset": {
+						"referenceName": "Excel1",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
 				}
 			],
 			"sinks": [
@@ -23,9 +58,60 @@
 						"referenceName": "NewBlobStorage",
 						"type": "LinkedServiceReference"
 					}
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText2",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "sort1"
+				},
+				{
+					"name": "rank1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "assert1"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          Column_1 as string,",
@@ -47,10 +133,156 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 sink(allowSchemaDrift: true,",
+				"source(output(",
+				"          Column_1 as string,",
+				"          Column_2 as string,",
+				"          Column_3 as string,",
+				"          Column_4 as string,",
+				"          Column_5 as string,",
+				"          Column_6 as string,",
+				"          Column_7 as string,",
+				"          Column_8 as string,",
+				"          Column_9 as string,",
+				"          Column_10 as string,",
+				"          Column_11 as string,",
+				"          Column_12 as string,",
+				"          Column_13 as string,",
+				"          Column_14 as string,",
+				"          Column_15 as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source(output(",
+				"          Column_1 as string,",
+				"          Column_2 as string,",
+				"          Column_3 as string,",
+				"          Column_4 as string,",
+				"          Column_5 as string,",
+				"          Column_6 as string,",
+				"          Column_7 as string,",
+				"          Column_8 as string,",
+				"          Column_9 as string,",
+				"          Column_10 as string,",
+				"          Column_11 as string,",
+				"          Column_12 as string,",
+				"          Column_13 as string,",
+				"          Column_14 as string,",
+				"          Column_15 as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source(output(",
+				"          Column_1 as string,",
+				"          Column_2 as string,",
+				"          Column_3 as string,",
+				"          Column_4 as string,",
+				"          Column_5 as string,",
+				"          Column_6 as string,",
+				"          Column_7 as string,",
+				"          Column_8 as string,",
+				"          Column_9 as string,",
+				"          Column_10 as string,",
+				"          Column_11 as string,",
+				"          Column_12 as string,",
+				"          Column_13 as string,",
+				"          Column_14 as string,",
+				"          Column_15 as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source(output(",
+				"          Column_1 as string,",
+				"          Column_2 as string,",
+				"          Column_3 as string,",
+				"          Column_4 as string,",
+				"          Column_5 as string,",
+				"          Column_6 as string,",
+				"          Column_7 as string,",
+				"          Column_8 as string,",
+				"          Column_9 as string,",
+				"          Column_10 as string,",
+				"          Column_11 as string,",
+				"          Column_12 as string,",
+				"          Column_13 as string,",
+				"          Column_14 as string,",
+				"          Column_15 as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source6",
+				"source1 aggregate(groupBy(Column_14,",
+				"          Column_12),",
+				"     Total_Count = count(Column_1)) ~> aggregate1",
+				"aggregate1 split(Column_12 == 'Yes',",
+				"     Column_12 == 'No',",
+				"     disjoint: false) ~> split1@(InEANYes, InEANNo, Other)",
+				"split1@InEANNo derive(FullName = Column_14 + Column_12) ~> derivedColumn1",
+				"derivedColumn1 keyGenerate(output(Column_123 as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 select(mapColumn(",
+				"          Column_123,",
+				"          Column_14,",
+				"          Column_12,",
+				"          Total_Count,",
+				"          FullName",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sort(desc(Column_123, true)) ~> sort1",
+				"sort1 rank(asc(Total_Count, true),",
+				"     output({New Ranking} as long)) ~> rank1",
+				"source3, source4 join(Column_2 == ERROR_FUNCTION(''),",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"source5 derive() ~> derivedColumn2",
+				"source6 select(mapColumn(",
+				"          Column_1,",
+				"          Column_2,",
+				"          Column_3,",
+				"          Column_4,",
+				"          Column_5,",
+				"          Column_6,",
+				"          Column_7,",
+				"          Column_8,",
+				"          Column_9,",
+				"          Column_10,",
+				"          Column_11,",
+				"          Column_12,",
+				"          Column_13,",
+				"          Column_14,",
+				"          Column_15",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"source2 filter(equals(Column_11,\"1\")) ~> filter1",
+				"filter1, source2 assert(expectTrue(equals(source2@Column_12,\"Yes\"), false, 'assert1')) ~> assert1",
+				"split1@InEANYes sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true) ~> sink1",
+				"rank1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink2",
+				"assert1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink3"
 			]
 		}
 	}
