@@ -4,7 +4,7 @@
 		"parameters": {
 			"SecretKey": {
 				"type": "string",
-				"defaultValue": "Sqlserver1"
+				"defaultValue": "SqlServerMain1"
 			}
 		},
 		"annotations": [],
@@ -13,7 +13,7 @@
 			"connectionString": {
 				"type": "AzureKeyVaultSecret",
 				"store": {
-					"referenceName": "AzureKeyVault1",
+					"referenceName": "AzureKeyVault2",
 					"type": "LinkedServiceReference"
 				},
 				"secretName": {
