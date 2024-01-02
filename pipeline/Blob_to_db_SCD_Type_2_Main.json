@@ -91,6 +91,7 @@
 								],
 								"storeSettings": {
 									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
@@ -285,7 +286,7 @@
 											"source": {
 												"type": "AzureSqlSource",
 												"sqlReaderQuery": {
-													"value": "select Max(Updated_Date) as Last_Modified from @{item().Destination_Temp_Table_Name}",
+													"value": "select Max(Updated_Date) as Last_Modified from @{item().Destination_Archive_Table_Name}",
 													"type": "Expression"
 												},
 												"queryTimeout": "02:00:00",
@@ -403,7 +404,7 @@
 													},
 													"type": "Datetime"
 												},
-												"Source_File_Last_Modified": {
+												"FileLastModified": {
 													"value": {
 														"value": "@activity('File_Last_Modified').output.lastModified",
 														"type": "Expression"
@@ -424,6 +425,62 @@
 							}
 						}
 					]
+				}
+			},
+			{
+				"name": "Success_Mail",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-01.centralindia.logic.azure.com:443/workflows/68c42fd4e5794c7ba4c252679ec090b5/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=mTJBUNyC1Q8MYK9XFT0wSXMchyAKclZY1jlL4quz7zU",
+					"method": "POST",
+					"body": {
+						"value": "{\n    \"To\":\"sumanthinturi7@gmail.com\",\n    \"Subject\":\"Loads Success\"\n    \"body\":\"Data Loaded Successful\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Failure_Mail",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "ForEach1",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://prod-01.centralindia.logic.azure.com:443/workflows/68c42fd4e5794c7ba4c252679ec090b5/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=mTJBUNyC1Q8MYK9XFT0wSXMchyAKclZY1jlL4quz7zU",
+					"method": "POST",
+					"body": {
+						"value": "{\n    \"To\":\"sumanthinturi7@gmail.com\",\n    \"Subject\":\"Loads Failed\"\n    \"body\":\"Data Loaded Failed\"\n}",
+						"type": "Expression"
+					}
 				}
 			}
 		],
