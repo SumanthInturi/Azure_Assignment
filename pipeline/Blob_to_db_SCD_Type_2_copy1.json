@@ -370,8 +370,6 @@
 									{
 										"name": "Update_HWM",
 										"type": "SqlServerStoredProcedure",
-										"state": "Inactive",
-										"onInactiveMarkAs": "Succeeded",
 										"dependsOn": [
 											{
 												"activity": "Get_Last_Modified_Date",
@@ -393,7 +391,7 @@
 											"storedProcedureParameters": {
 												"Id": {
 													"value": {
-														"value": "@item().Id",
+														"value": "@item().Control_Obj_ID",
 														"type": "Expression"
 													},
 													"type": "Int16"
@@ -404,6 +402,13 @@
 														"type": "Expression"
 													},
 													"type": "Datetime"
+												},
+												"Source_File_Last_Modified": {
+													"value": {
+														"value": "@activity('File_Last_Modified').output.lastModified",
+														"type": "Expression"
+													},
+													"type": "Datetime"
 												}
 											}
 										},
@@ -411,7 +416,7 @@
 											"referenceName": "AzureSqlDatabaseMain",
 											"type": "LinkedServiceReference",
 											"parameters": {
-												"SecretKey": "SqlServerMain"
+												"SecretKey": "SqlServerMain1"
 											}
 										}
 									}
