@@ -1,0 +1,435 @@
+{
+	"name": "Blob_to_db_SCD_Type_2_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup1",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSqlTableMain",
+						"type": "DatasetReference",
+						"parameters": {
+							"SecretKey": "SqlServerMain1",
+							"SchemaName": "dbo",
+							"TableName": "Control_table"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup1').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 1,
+					"activities": [
+						{
+							"name": "File_Last_Modified",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "StorageActMain",
+									"type": "DatasetReference",
+									"parameters": {
+										"StorageActSecretKey": {
+											"value": "@item().Source_Blob_SecretKey",
+											"type": "Expression"
+										},
+										"FolderPath": {
+											"value": "@item().Source_FolderPath",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@item().Source_FileName",
+											"type": "Expression"
+										},
+										"ContainerName": {
+											"value": "@item().Source_Container_Name",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"lastModified"
+								],
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							}
+						},
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [
+								{
+									"activity": "File_Last_Modified",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@greater(activity('File_Last_Modified').output.lastModified,item().Source_File_Last_Updated_date)",
+									"type": "Expression"
+								},
+								"ifTrueActivities": [
+									{
+										"name": "Source_to_Stage",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "DelimitedTextSource",
+												"storeSettings": {
+													"type": "AzureBlobStorageReadSettings",
+													"recursive": true,
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "DelimitedTextReadSettings"
+												}
+											},
+											"sink": {
+												"type": "AzureSqlSink",
+												"preCopyScript": {
+													"value": "if object_id('@{item().Destination_Stage_Schema_Name}.@{item().Destination_Stage_Table_Name}') is not null\nTruncate table @{item().Destination_Stage_Schema_Name}.@{item().Destination_Stage_Table_Name}",
+													"type": "Expression"
+												},
+												"writeBehavior": "insert",
+												"sqlWriterUseTableLock": false,
+												"tableOption": "autoCreate",
+												"disableMetricsCollection": false
+											},
+											"enableStaging": false,
+											"logSettings": {
+												"enableCopyActivityLog": true,
+												"copyActivityLogSettings": {
+													"logLevel": "Warning",
+													"enableReliableLogging": false
+												},
+												"logLocationSettings": {
+													"linkedServiceName": {
+														"referenceName": "NewBlobStorage",
+														"type": "LinkedServiceReference"
+													},
+													"path": "mycontainer/Archive"
+												}
+											},
+											"translator": {
+												"type": "TabularTranslator",
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "StorageActMain",
+												"type": "DatasetReference",
+												"parameters": {
+													"StorageActSecretKey": {
+														"value": "@item().Source_Blob_SecretKey",
+														"type": "Expression"
+													},
+													"FolderPath": {
+														"value": "@item().Source_FolderPath",
+														"type": "Expression"
+													},
+													"FileName": {
+														"value": "@item().Source_FileName",
+														"type": "Expression"
+													},
+													"ContainerName": {
+														"value": "@item().Source_Container_Name",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "AzureSqlTableMain",
+												"type": "DatasetReference",
+												"parameters": {
+													"SecretKey": {
+														"value": "@item().Destination_DB_SecretKey",
+														"type": "Expression"
+													},
+													"SchemaName": {
+														"value": "@item().Destination_Stage_Schema_Name",
+														"type": "Expression"
+													},
+													"TableName": {
+														"value": "@item().Destination_Stage_Table_Name",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									},
+									{
+										"name": "Stage_to_Type_1_Table",
+										"type": "Script",
+										"dependsOn": [
+											{
+												"activity": "Source_to_Stage",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"linkedServiceName": {
+											"referenceName": "AzureSqlDatabaseMain",
+											"type": "LinkedServiceReference",
+											"parameters": {
+												"SecretKey": {
+													"value": "@item().Destination_DB_SecretKey",
+													"type": "Expression"
+												}
+											}
+										},
+										"typeProperties": {
+											"scripts": [
+												{
+													"type": "Query",
+													"text": {
+														"value": "Exec Stage_to_Archive @{item().Destination_Stage_Schema_Name},@{item().Destination_Stage_Table_Name},@{item().Destination_Stage_Key_Column},@{item().Destination_Archive_Table_Schema_Name},@{item().Destination_Archive_Table_Name},@{item().Destination_Archive_Table_key_Column};",
+														"type": "Expression"
+													}
+												}
+											],
+											"scriptBlockExecutionTimeout": "02:00:00"
+										}
+									},
+									{
+										"name": "Get_Last_Modified_Date",
+										"type": "Lookup",
+										"dependsOn": [
+											{
+												"activity": "Temp_To_Dim",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "AzureSqlSource",
+												"sqlReaderQuery": {
+													"value": "select Max(Updated_Date) as Last_Modified from @{item().Destination_Temp_Table_Name}",
+													"type": "Expression"
+												},
+												"queryTimeout": "02:00:00",
+												"partitionOption": "None"
+											},
+											"dataset": {
+												"referenceName": "AzureSqlTableMain",
+												"type": "DatasetReference",
+												"parameters": {
+													"SecretKey": {
+														"value": "@item().Destination_DB_SecretKey",
+														"type": "Expression"
+													},
+													"SchemaName": {
+														"value": "@item().Destination_Archive_Table_Schema_Name",
+														"type": "Expression"
+													},
+													"TableName": {
+														"value": "@item().Destination_Archive_Table_Name",
+														"type": "Expression"
+													}
+												}
+											}
+										}
+									},
+									{
+										"name": "Temp_To_Dim",
+										"type": "SqlServerStoredProcedure",
+										"dependsOn": [
+											{
+												"activity": "Stage_to_Type_1_Table",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": "[dbo].[Archive_to_Dim]",
+											"storedProcedureParameters": {
+												"Source_Table_Name": {
+													"value": {
+														"value": "@item().Destination_Archive_Table_Name",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"Destination_Table_Name": {
+													"value": {
+														"value": "@item().Destination_Dimension_Table_Name",
+														"type": "Expression"
+													},
+													"type": "String"
+												},
+												"Delta_Watermark": {
+													"value": {
+														"value": "@item().Delta_Watermark",
+														"type": "Expression"
+													},
+													"type": "Datetime"
+												}
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "AzureSqlDatabaseMain",
+											"type": "LinkedServiceReference",
+											"parameters": {
+												"SecretKey": {
+													"value": "@item().Destination_DB_SecretKey",
+													"type": "Expression"
+												}
+											}
+										}
+									},
+									{
+										"name": "Update_HWM",
+										"type": "SqlServerStoredProcedure",
+										"state": "Inactive",
+										"onInactiveMarkAs": "Succeeded",
+										"dependsOn": [
+											{
+												"activity": "Get_Last_Modified_Date",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"storedProcedureName": "[dbo].[UpdateControlTable]",
+											"storedProcedureParameters": {
+												"Id": {
+													"value": {
+														"value": "@item().Id",
+														"type": "Expression"
+													},
+													"type": "Int16"
+												},
+												"LastModified": {
+													"value": {
+														"value": "@activity('Get_Last_Modified_Date').output.firstRow.Last_Modified",
+														"type": "Expression"
+													},
+													"type": "Datetime"
+												}
+											}
+										},
+										"linkedServiceName": {
+											"referenceName": "AzureSqlDatabaseMain",
+											"type": "LinkedServiceReference",
+											"parameters": {
+												"SecretKey": "SqlServerMain"
+											}
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"DateTime": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Assignments"
+		},
+		"annotations": []
+	}
+}

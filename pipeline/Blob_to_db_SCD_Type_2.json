@@ -24,7 +24,7 @@
 						"referenceName": "AzureSqlTableMain",
 						"type": "DatasetReference",
 						"parameters": {
-							"SecretKey": "Sqlserver1",
+							"SecretKey": "SqlServerMain1",
 							"SchemaName": "dbo",
 							"TableName": "Control_table"
 						}
@@ -334,6 +334,11 @@
 				}
 			}
 		],
+		"variables": {
+			"DateTime": {
+				"type": "String"
+			}
+		},
 		"folder": {
 			"name": "Assignments"
 		},

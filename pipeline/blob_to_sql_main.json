@@ -141,6 +141,11 @@
 				}
 			}
 		],
+		"variables": {
+			"DateTime": {
+				"type": "String"
+			}
+		},
 		"folder": {
 			"name": "Assignments"
 		},
