@@ -1,0 +1,25 @@
+{
+	"name": "triggerdemo1",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Blob_to_db_SCD_Type_2_Main",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Hour",
+				"interval": 12,
+				"startTime": "2024-01-03T19:00:00",
+				"endTime": "2024-01-12T13:25:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}
