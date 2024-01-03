@@ -113,7 +113,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@greater(activity('File_Last_Modified').output.lastModified,item().Source_File_Last_Updated_date)",
+									"value": "@greater(formatDateTime(activity('File_Last_Modified').output.lastModified,'DD-MON-YYYY HH:MI:SS'),formatDateTime(item().Source_File_Last_Updated_date,'DD-MON-YYYY HH:MI:SS'))",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
@@ -482,6 +482,12 @@
 		],
 		"variables": {
 			"DateTime": {
+				"type": "String"
+			},
+			"IsTrue": {
+				"type": "Boolean"
+			},
+			"File_Last_Update": {
 				"type": "String"
 			}
 		},

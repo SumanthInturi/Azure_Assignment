@@ -52,6 +52,23 @@
 						"type": "DatasetReference"
 					},
 					"name": "source7"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "source8"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "source9"
+				},
+				{
+					"name": "source10"
 				}
 			],
 			"sinks": [
@@ -61,6 +78,24 @@
 						"type": "DatasetReference"
 					},
 					"name": "sink1",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureBlobStorage6",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "sink2",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureBlobStorage6",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"name": "sink3",
 					"rejectedDataLinkedService": {
 						"referenceName": "AzureBlobStorage6",
 						"type": "LinkedServiceReference"
@@ -106,6 +141,21 @@
 				},
 				{
 					"name": "lookup1"
+				},
+				{
+					"name": "pivot1"
+				},
+				{
+					"name": "unpivot1"
+				},
+				{
+					"name": "pivot2"
+				},
+				{
+					"name": "pivot3"
+				},
+				{
+					"name": "unpivot2"
 				}
 			],
 			"scriptLines": [
@@ -139,7 +189,8 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> source2",
+				"     ignoreNoFilesFound: false,",
+				"     partitionBy('hash', 1)) ~> source2",
 				"source(output(",
 				"          ID as string,",
 				"          Date as string,",
@@ -195,6 +246,28 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source7",
+				"source(output(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source8",
+				"source(output(",
+				"          ID as short,",
+				"          Date as date 'dd-MM-yyyy',",
+				"          Name as string,",
+				"          Address as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source9",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false) ~> source10",
 				"source1 derive(Derived_Column = Column_1 + Column_2 + Column_3 + Column_4,",
 				"          Derived_Column_2 = Column_5 + Column_6 + Column_7 + Column_8) ~> derivedColumn1",
 				"derivedColumn1 select(mapColumn(",
@@ -222,11 +295,11 @@
 				"surrogateKey1 window(over(surrogate),",
 				"     asc(surrogate, true),",
 				"     Derived_Column_2 = ERROR_FUNCTION('')) ~> window1",
-				"source2 assert(expectTrue(equals(length(phonenumber), 10), false, 'assertNumberValid'),",
+				"unpivot1 assert(expectTrue(equals(length(phonenumber), 10), false, 'assertNumberValid'),",
 				"     expectUnique(ID, false, 'assertIdUnique'),",
 				"     expectTrue(!isNull(toDate(Date,'dd-mm-yyyy')), false, 'assertDateValid')) ~> assert1",
 				"assert1 cast(output(",
-				"          ID as integer",
+				"          Date as string",
 				"     ),",
 				"     errors: true) ~> cast1",
 				"source3 cast(output(",
@@ -251,6 +324,37 @@
 				"     pickup: 'last',",
 				"     desc(source3@ID, false),",
 				"     broadcast: 'auto')~> lookup1",
+				"source2 pivot(groupBy(Date),",
+				"     pivotBy(Address),",
+				"     th = count(ID),",
+				"     columnNaming: '$N$V',",
+				"     lateral: false) ~> pivot1",
+				"pivot1 unpivot(output(",
+				"          Address as string,",
+				"          Value as string",
+				"     ),",
+				"     ungroupBy(Date),",
+				"     lateral: false,",
+				"     ignoreNullPivots: true) ~> unpivot1",
+				"source8 pivot(groupBy(Date),",
+				"     pivotBy(Address),",
+				"     {} = count(ID),",
+				"     columnNaming: '$N$V',",
+				"     lateral: true) ~> pivot2",
+				"source9 pivot(groupBy(Date),",
+				"     pivotBy(Address),",
+				"     {} = count(ID),",
+				"     columnNaming: '$N$V',",
+				"     lateral: true) ~> pivot3",
+				"source10 unpivot(output(",
+				"          Fruits as string,",
+				"          Amount as string",
+				"     ),",
+				"     ungroupBy(PO,",
+				"          Vender),",
+				"     pivotValues: ['Apple', 'Mangoo'],",
+				"     lateral: true,",
+				"     ignoreNullPivots: false) ~> unpivot2",
 				"cast1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -264,7 +368,27 @@
 				"     partitionFileNames:['outputfile.csv'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     partitionBy('hash', 1)) ~> sink1"
+				"     partitionBy('hash', 1)) ~> sink1",
+				"pivot2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     partitionFileNames:['OutputFile2.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink2",
+				"pivot3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['PivotOutputFile.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink3"
 			]
 		}
 	}

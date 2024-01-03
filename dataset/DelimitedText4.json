@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText3",
+	"name": "DelimitedText4",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage6",
@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"fileName": "InputData.csv",
+				"fileName": "sink3_data_preview (1).csv",
 				"container": "mycontainer"
 			},
 			"columnDelimiter": ",",
@@ -20,27 +20,19 @@
 		},
 		"schema": [
 			{
-				"name": "ID",
+				"name": "PO",
 				"type": "String"
 			},
 			{
-				"name": "Date",
+				"name": "Vender",
 				"type": "String"
 			},
 			{
-				"name": "FirstName",
+				"name": "Apple",
 				"type": "String"
 			},
 			{
-				"name": "LastName",
-				"type": "String"
-			},
-			{
-				"name": "Address",
-				"type": "String"
-			},
-			{
-				"name": "phonenumber",
+				"name": "Mangoo",
 				"type": "String"
 			}
 		]

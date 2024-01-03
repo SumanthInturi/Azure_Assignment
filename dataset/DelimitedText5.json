@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText3",
+	"name": "DelimitedText5",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage6",
@@ -18,31 +18,6 @@
 			"firstRowAsHeader": true,
 			"quoteChar": "\""
 		},
-		"schema": [
-			{
-				"name": "ID",
-				"type": "String"
-			},
-			{
-				"name": "Date",
-				"type": "String"
-			},
-			{
-				"name": "FirstName",
-				"type": "String"
-			},
-			{
-				"name": "LastName",
-				"type": "String"
-			},
-			{
-				"name": "Address",
-				"type": "String"
-			},
-			{
-				"name": "phonenumber",
-				"type": "String"
-			}
-		]
+		"schema": []
 	}
 }

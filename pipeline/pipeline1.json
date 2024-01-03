@@ -85,6 +85,12 @@
 		"variables": {
 			"DateTime": {
 				"type": "String"
+			},
+			"IsTrue": {
+				"type": "Boolean"
+			},
+			"File_Last_Update": {
+				"type": "String"
 			}
 		},
 		"annotations": []
