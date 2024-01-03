@@ -1,0 +1,44 @@
+{
+	"name": "flowlet31",
+	"properties": {
+		"type": "Flowlet",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "assert1"
+				},
+				{
+					"name": "cast1"
+				},
+				{
+					"name": "input2"
+				},
+				{
+					"name": "output1"
+				}
+			],
+			"scriptLines": [
+				"input(output(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     order: 0,",
+				"     allowSchemaDrift: true) ~> input2",
+				"input2 assert(expectTrue(equals(length(phonenumber), 10), false, 'assertNumberValid'),",
+				"     expectUnique(ID, false, 'assertIdUnique'),",
+				"     expectTrue(!isNull(toDate(Date,'dd-mm-yyyy')), false, 'assertDateValid')) ~> assert1",
+				"assert1 cast(output(",
+				"          ID as integer",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"cast1 output() ~> output1"
+			]
+		}
+	}
+}

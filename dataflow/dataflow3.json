@@ -10,9 +10,63 @@
 						"type": "DatasetReference"
 					},
 					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "source7"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText3",
+						"type": "DatasetReference"
+					},
+					"name": "sink1",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureBlobStorage6",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -25,6 +79,33 @@
 				},
 				{
 					"name": "window1"
+				},
+				{
+					"name": "assert1"
+				},
+				{
+					"name": "cast1"
+				},
+				{
+					"name": "cast2"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "exists1"
+				},
+				{
+					"name": "union1"
+				},
+				{
+					"name": "lookup1"
 				}
 			],
 			"scriptLines": [
@@ -48,6 +129,72 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source(output(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source(output(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source(output(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source(output(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source6",
+				"source(output(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source7",
 				"source1 derive(Derived_Column = Column_1 + Column_2 + Column_3 + Column_4,",
 				"          Derived_Column_2 = Column_5 + Column_6 + Column_7 + Column_8) ~> derivedColumn1",
 				"derivedColumn1 select(mapColumn(",
@@ -74,7 +221,50 @@
 				"     stepValue: 100L) ~> surrogateKey1",
 				"surrogateKey1 window(over(surrogate),",
 				"     asc(surrogate, true),",
-				"     Derived_Column_2 = ERROR_FUNCTION('')) ~> window1"
+				"     Derived_Column_2 = ERROR_FUNCTION('')) ~> window1",
+				"source2 assert(expectTrue(equals(length(phonenumber), 10), false, 'assertNumberValid'),",
+				"     expectUnique(ID, false, 'assertIdUnique'),",
+				"     expectTrue(!isNull(toDate(Date,'dd-mm-yyyy')), false, 'assertDateValid')) ~> assert1",
+				"assert1 cast(output(",
+				"          ID as integer",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"source3 cast(output(",
+				"          Date as timestamp 'dd-MM-yyyy',",
+				"          phonenumber as long",
+				"     ),",
+				"     errors: true) ~> cast2",
+				"cast2 derive({Error's} = !isError()) ~> derivedColumn2",
+				"derivedColumn2 split(!isError(),",
+				"     disjoint: false) ~> split1@(GoodRows, BadRows)",
+				"source4, source3 join(fuzzyCompare(source4@ID, source3@ID, 80.00),",
+				"     joinType:'outer',",
+				"     matchType:'fuzzy',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"source5, source3 exists(source5@ID == source3@ID,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists1",
+				"source6, source3 union(byName: false)~> union1",
+				"source7, source3 lookup(source7@ID == source3@ID,",
+				"     multiple: false,",
+				"     pickup: 'last',",
+				"     desc(source3@ID, false),",
+				"     broadcast: 'auto')~> lookup1",
+				"cast1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string,",
+				"          phonenumber as string",
+				"     ),",
+				"     partitionFileNames:['outputfile.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
 	}
