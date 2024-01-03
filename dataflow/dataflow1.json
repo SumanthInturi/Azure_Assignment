@@ -21,6 +21,10 @@
 					"name": "sink1"
 				},
 				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
 					"name": "sink2"
 				}
 			],
@@ -55,6 +59,13 @@
 				"     skipDuplicateMapOutputs: true) ~> sink1",
 				"split1@Date sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          ID as string,",
+				"          Date as string,",
+				"          FirstName as string,",
+				"          LastName as string,",
+				"          Address as string",
+				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> sink2"
 			]

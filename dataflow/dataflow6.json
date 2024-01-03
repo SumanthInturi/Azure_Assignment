@@ -26,16 +26,38 @@
 					"name": "source3"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText2",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText5",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText4",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				}
+			],
 			"transformations": [
+				{
+					"name": "externalCall1"
+				},
 				{
 					"name": "unpivot1"
 				},
 				{
 					"name": "window1"
-				},
-				{
-					"name": "externalCall1"
 				}
 			],
 			"scriptLines": [
@@ -60,6 +82,11 @@
 				"source(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source3",
+				"source3 call(output(",
+				"          headers as [string,string],",
+				"          status as string",
+				"     ),",
+				"     allowSchemaDrift: true) ~> externalCall1",
 				"source1 unpivot(output(",
 				"          Fruits as string,",
 				"          Amount as string",
@@ -71,11 +98,24 @@
 				"source2 window(over(ID),",
 				"     asc(Date, true),",
 				"     Rank_Column = denseRank()) ~> window1",
-				"source3 call(output(",
-				"          headers as [string,string],",
-				"          status as string",
+				"unpivot1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1",
+				"window1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink2",
+				"externalCall1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          PO as string,",
+				"          Vender as string,",
+				"          Apple as string,",
+				"          Mangoo as string",
 				"     ),",
-				"     allowSchemaDrift: true) ~> externalCall1"
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3"
 			]
 		}
 	}

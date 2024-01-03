@@ -66,9 +66,6 @@
 						"type": "DatasetReference"
 					},
 					"name": "source9"
-				},
-				{
-					"name": "source10"
 				}
 			],
 			"sinks": [
@@ -93,13 +90,6 @@
 						"referenceName": "AzureBlobStorage6",
 						"type": "LinkedServiceReference"
 					}
-				},
-				{
-					"name": "sink3",
-					"rejectedDataLinkedService": {
-						"referenceName": "AzureBlobStorage6",
-						"type": "LinkedServiceReference"
-					}
 				}
 			],
 			"transformations": [
@@ -111,12 +101,6 @@
 				},
 				{
 					"name": "surrogateKey1"
-				},
-				{
-					"name": "window1"
-				},
-				{
-					"name": "assert1"
 				},
 				{
 					"name": "cast1"
@@ -143,19 +127,10 @@
 					"name": "lookup1"
 				},
 				{
-					"name": "pivot1"
-				},
-				{
-					"name": "unpivot1"
-				},
-				{
 					"name": "pivot2"
 				},
 				{
 					"name": "pivot3"
-				},
-				{
-					"name": "unpivot2"
 				}
 			],
 			"scriptLines": [
@@ -266,8 +241,6 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source9",
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source10",
 				"source1 derive(Derived_Column = Column_1 + Column_2 + Column_3 + Column_4,",
 				"          Derived_Column_2 = Column_5 + Column_6 + Column_7 + Column_8) ~> derivedColumn1",
 				"derivedColumn1 select(mapColumn(",
@@ -292,13 +265,7 @@
 				"select1 keyGenerate(output(surrogate as long),",
 				"     startAt: 1000L,",
 				"     stepValue: 100L) ~> surrogateKey1",
-				"surrogateKey1 window(over(surrogate),",
-				"     asc(surrogate, true),",
-				"     Derived_Column_2 = ERROR_FUNCTION('')) ~> window1",
-				"unpivot1 assert(expectTrue(equals(length(phonenumber), 10), false, 'assertNumberValid'),",
-				"     expectUnique(ID, false, 'assertIdUnique'),",
-				"     expectTrue(!isNull(toDate(Date,'dd-mm-yyyy')), false, 'assertDateValid')) ~> assert1",
-				"assert1 cast(output(",
+				"source2 cast(output(",
 				"          Date as string",
 				"     ),",
 				"     errors: true) ~> cast1",
@@ -310,9 +277,9 @@
 				"cast2 derive({Error's} = !isError()) ~> derivedColumn2",
 				"derivedColumn2 split(!isError(),",
 				"     disjoint: false) ~> split1@(GoodRows, BadRows)",
-				"source4, source3 join(fuzzyCompare(source4@ID, source3@ID, 80.00),",
+				"source4, source3 join(source4@ID == source3@ID,",
 				"     joinType:'outer',",
-				"     matchType:'fuzzy',",
+				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join1",
 				"source5, source3 exists(source5@ID == source3@ID,",
@@ -324,18 +291,6 @@
 				"     pickup: 'last',",
 				"     desc(source3@ID, false),",
 				"     broadcast: 'auto')~> lookup1",
-				"source2 pivot(groupBy(Date),",
-				"     pivotBy(Address),",
-				"     th = count(ID),",
-				"     columnNaming: '$N$V',",
-				"     lateral: false) ~> pivot1",
-				"pivot1 unpivot(output(",
-				"          Address as string,",
-				"          Value as string",
-				"     ),",
-				"     ungroupBy(Date),",
-				"     lateral: false,",
-				"     ignoreNullPivots: true) ~> unpivot1",
 				"source8 pivot(groupBy(Date),",
 				"     pivotBy(Address),",
 				"     {} = count(ID),",
@@ -346,15 +301,6 @@
 				"     {} = count(ID),",
 				"     columnNaming: '$N$V',",
 				"     lateral: true) ~> pivot3",
-				"source10 unpivot(output(",
-				"          Fruits as string,",
-				"          Amount as string",
-				"     ),",
-				"     ungroupBy(PO,",
-				"          Vender),",
-				"     pivotValues: ['Apple', 'Mangoo'],",
-				"     lateral: true,",
-				"     ignoreNullPivots: false) ~> unpivot2",
 				"cast1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -382,13 +328,7 @@
 				"     partitionFileNames:['OutputFile2.csv'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     partitionBy('hash', 1)) ~> sink2",
-				"pivot3 sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     partitionFileNames:['PivotOutputFile.csv'],",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     partitionBy('hash', 1)) ~> sink3"
+				"     partitionBy('hash', 1)) ~> sink2"
 			]
 		}
 	}
