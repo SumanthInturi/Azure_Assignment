@@ -168,12 +168,8 @@
 												}
 											},
 											"translator": {
-												"type": "TabularTranslator",
-												"typeConversion": true,
-												"typeConversionSettings": {
-													"allowDataTruncation": true,
-													"treatBooleanAsNumber": false
-												}
+												"value": "item().Destination_Stage_Table_Data_Mapping",
+												"type": "Expression"
 											}
 										},
 										"inputs": [

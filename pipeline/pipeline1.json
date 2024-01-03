@@ -26,6 +26,7 @@
 					],
 					"storeSettings": {
 						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
 						"enablePartitionDiscovery": false
 					},
 					"formatSettings": {
@@ -34,8 +35,8 @@
 				}
 			},
 			{
-				"name": "Lookup1",
-				"type": "Lookup",
+				"name": "Web1",
+				"type": "WebActivity",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -46,21 +47,12 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "AzureSqlTableMain",
-						"type": "DatasetReference",
-						"parameters": {
-							"SecretKey": "SqlServerMain1",
-							"SchemaName": "dbo",
-							"TableName": "Control_table"
-						}
-					},
-					"firstRowOnly": false
+					"url": "https://prod-01.centralindia.logic.azure.com:443/workflows/68c42fd4e5794c7ba4c252679ec090b5/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=mTJBUNyC1Q8MYK9XFT0wSXMchyAKclZY1jlL4quz7zU",
+					"method": "POST",
+					"body": {
+						"value": "Data Load Successful",
+						"type": "Expression"
+					}
 				}
 			}
 		],
