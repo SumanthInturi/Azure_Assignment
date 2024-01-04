@@ -1,0 +1,155 @@
+{
+	"name": "GitHub_Followers_and_repos",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Json2",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "OutputFileMain",
+						"type": "DatasetReference"
+					},
+					"name": "sink1",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureBlobStorage6",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "externalCall1",
+					"linkedService": {
+						"referenceName": "RestService2",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"name": "externalCall2",
+					"linkedService": {
+						"referenceName": "RestService2",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select4"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Firstname as string,",
+				"          ID as short,",
+				"          Lastname as string,",
+				"          Projects as string[],",
+				"          contact as (landline as string, phone_number as long)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> source1",
+				"source1 derive(Phone_Number = contact.phone_number,",
+				"          FullName = Firstname+Lastname,",
+				"          ReposRelativeURL = Firstname+Lastname+\"/repos\") ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          Firstname,",
+				"          ID,",
+				"          Lastname,",
+				"          Phone_Number,",
+				"          FullName,",
+				"          ReposRelativeURL",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 call(output(",
+				"          body as (avatar_url as string, created_at as string, followers as string, following as string, id as string, location as string, login as string, name as string, node_id as string, public_repos as string, site_admin as string, updated_at as string)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     format: 'rest',",
+				"     store: 'restservice',",
+				"     timeout: 30,",
+				"     requestInterval: 0,",
+				"     httpMethod: 'GET',",
+				"     rowRelativeUrl: 'FullName',",
+				"     bodyColumnName: 'body',",
+				"     requestFormat: ['type' -> 'json'],",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'arrayOfDocuments']) ~> externalCall1",
+				"externalCall1 call(output(",
+				"          body2 as (created_at as string, default_branch as string, fork as string, forks as string, full_name as string, id as string, language as string, merges_url as string, milestones_url as string, mirror_url as string, name as string, node_id as string, notifications_url as string, private as string, pushed_at as string, size as string, updated_at as string, visibility as string, watchers as string, watchers_count as string, web_commit_signoff_required as string)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     format: 'rest',",
+				"     store: 'restservice',",
+				"     timeout: 30,",
+				"     requestInterval: 0,",
+				"     httpMethod: 'GET',",
+				"     rowRelativeUrl: 'ReposRelativeURL',",
+				"     bodyColumnName: 'body2',",
+				"     requestFormat: ['type' -> 'json'],",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'arrayOfDocuments']) ~> externalCall2",
+				"externalCall2 derive(Followers = body.followers,",
+				"          Following = body.following,",
+				"          GitHub_ID = body.id,",
+				"          GitHub_UserName = body.login,",
+				"          GitHub_Total_Repos = body.public_repos,",
+				"          Repo_Created_On = body2.created_at,",
+				"          Repo_ID = body2.id,",
+				"          Repo_Name = body2.name,",
+				"          Repo_Main_Language = body2.language,",
+				"          Repo_Forks = body2.forks,",
+				"          Repo_Pushed_at = body2.pushed_at,",
+				"          Repo_Size = body2.size,",
+				"          Repo_Updated_On = body2.updated_at,",
+				"          Repo_Visibility = body2.visibility,",
+				"          Repo_Watchers_Count = body2.watchers_count) ~> derivedColumn2",
+				"derivedColumn2 select(mapColumn(",
+				"          ID,",
+				"          Firstname,",
+				"          Lastname,",
+				"          FullName,",
+				"          Phone_Number,",
+				"          GitHub_ID,",
+				"          GitHub_UserName,",
+				"          Followers,",
+				"          Following,",
+				"          GitHub_Total_Repos,",
+				"          Repo_ID,",
+				"          Repo_Name,",
+				"          Repo_Main_Language,",
+				"          Repo_Created_On,",
+				"          Repo_Updated_On,",
+				"          Repo_Pushed_at,",
+				"          Repo_Visibility,",
+				"          Repo_Forks,",
+				"          Repo_Size,",
+				"          Repo_Watchers_Count",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select4",
+				"select4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['Git_Repos_Details.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}

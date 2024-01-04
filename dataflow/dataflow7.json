@@ -1,0 +1,119 @@
+{
+	"name": "dataflow7",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Json2",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "externalCall1",
+					"linkedService": {
+						"referenceName": "RestService3",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "externalCall2",
+					"linkedService": {
+						"referenceName": "RestService2",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"name": "flatten1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Firstname as string,",
+				"          ID as short,",
+				"          Lastname as string,",
+				"          Projects as string[],",
+				"          contact as (landline as string, phone_number as long)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> source1",
+				"source1 keyGenerate(output(ID as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(RelativeURL = \"https://reqres.in/api/users/\"+toString(ID)) ~> derivedColumn1",
+				"derivedColumn1 call(mapColumn(",
+				"          each(match(/* All input columns */ true()),",
+				"               /* Input name */ $$ = $$)",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     output(",
+				"          headers as [string,string],",
+				"          body as (data as (avatar as string, email as string, first_name as string, id as string, last_name as string)[], page as string, per_page as string, support as (text as string, url as string), total as string, total_pages as string),",
+				"          status as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     format: 'rest',",
+				"     store: 'restservice',",
+				"     timeout: 30,",
+				"     requestInterval: 0,",
+				"     httpMethod: 'GET',",
+				"     rowRelativeUrl: 'ID',",
+				"     headerColumnName: 'headers',",
+				"     bodyColumnName: 'body',",
+				"     statusColumnName: 'status',",
+				"     addResponseCode: true,",
+				"     requestFormat: ['type' -> 'json'],",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'singleDocument']) ~> externalCall1",
+				"source1 derive(FullName = Firstname+Lastname,",
+				"          RelativeURL = \"https://api.github.com/users/\"+Firstname+Lastname) ~> derivedColumn2",
+				"flatten1 call(output(",
+				"          headers as [string,string],",
+				"          body as (avatar_url as string, bio as string, created_at as string, email as string, followers as string, following as string, id as string, location as string, login as string, name as string, node_id as string, public_repos as string, site_admin as string, updated_at as string),",
+				"          status as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     format: 'rest',",
+				"     store: 'restservice',",
+				"     timeout: 30,",
+				"     requestInterval: 0,",
+				"     httpMethod: 'GET',",
+				"     rowRelativeUrl: 'FullName',",
+				"     headerColumnName: 'headers',",
+				"     bodyColumnName: 'body',",
+				"     statusColumnName: 'status',",
+				"     addResponseCode: true,",
+				"     requestFormat: ['type' -> 'json'],",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'singleDocument']) ~> externalCall2",
+				"derivedColumn2 foldDown(unroll(Projects),",
+				"     mapColumn(",
+				"          Firstname,",
+				"          ID,",
+				"          Lastname,",
+				"          Projects,",
+				"          contact,",
+				"          FullName,",
+				"          RelativeURL",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1"
+			]
+		}
+	}
+}
