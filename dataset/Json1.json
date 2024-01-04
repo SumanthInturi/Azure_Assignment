@@ -1,0 +1,29 @@
+{
+	"name": "Json1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage6",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "InputSample2.json",
+				"container": "mycontainer"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"color": {
+					"type": "string"
+				},
+				"value": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}
