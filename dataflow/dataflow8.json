@@ -49,7 +49,7 @@
 				"     rowRelativeUrl: 'UserRelativeURL',",
 				"     bodyColumnName: 'body',",
 				"     requestFormat: ['type' -> 'json'],",
-				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'documentPerLine']) ~> externalCall1",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'arrayOfDocuments']) ~> externalCall1",
 				"source1 derive(UserRelativeURL = \"/\"+Firstname+Lastname) ~> derivedColumn1"
 			]
 		}
