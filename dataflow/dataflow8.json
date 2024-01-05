@@ -23,6 +23,16 @@
 				},
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "externalCall2",
+					"linkedService": {
+						"referenceName": "RestService5",
+						"type": "LinkedServiceReference"
+					}
 				}
 			],
 			"scriptLines": [
@@ -37,8 +47,8 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments') ~> source1",
-				"derivedColumn1 call(output(",
-				"          body as ()",
+				"select1 call(output(",
+				"          body as (avatar_url as string, bio as string, blog as string, company as string, created_at as string, email as string, events_url as string, followers as string, followers_url as string, following as string, following_url as string, gists_url as string, gravatar_id as string, hireable as string, html_url as string, id as string, location as string, login as string, name as string, node_id as string, organizations_url as string, public_gists as string, public_repos as string, received_events_url as string, repos_url as string, site_admin as string, starred_url as string, subscriptions_url as string, twitter_username as string, type as string, updated_at as string, url as string)",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     format: 'rest',",
@@ -50,7 +60,36 @@
 				"     bodyColumnName: 'body',",
 				"     requestFormat: ['type' -> 'json'],",
 				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'arrayOfDocuments']) ~> externalCall1",
-				"source1 derive(UserRelativeURL = \"/\"+Firstname+Lastname) ~> derivedColumn1"
+				"source1 derive(UserRelativeURL = \"/\"+Firstname+Lastname,",
+				"          ReposRelativeURL = \"/\"+Firstname+Lastname+\"/repos\",",
+				"          FollowersRelativeURL = \"/\"+Firstname+Lastname+\"/followers\",",
+				"          FollowingRelativeURL = \"/\"+Firstname+Lastname+\"/following\",",
+				"          Phone_Number = contact.phone_number) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          Firstname,",
+				"          ID,",
+				"          Lastname,",
+				"          Phone_Number,",
+				"          UserRelativeURL,",
+				"          ReposRelativeURL,",
+				"          FollowersRelativeURL,",
+				"          FollowingRelativeURL",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"externalCall1 call(output(",
+				"          body2 as ()",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     format: 'rest',",
+				"     store: 'restservice',",
+				"     timeout: 30,",
+				"     requestInterval: 0,",
+				"     httpMethod: 'GET',",
+				"     rowRelativeUrl: 'ReposRelativeURL',",
+				"     bodyColumnName: 'body2',",
+				"     requestFormat: ['type' -> 'json'],",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'arrayOfDocuments']) ~> externalCall2"
 			]
 		}
 	}
