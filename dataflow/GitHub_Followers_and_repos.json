@@ -27,12 +27,6 @@
 			],
 			"transformations": [
 				{
-					"name": "derivedColumn1"
-				},
-				{
-					"name": "select1"
-				},
-				{
 					"name": "externalCall1",
 					"linkedService": {
 						"referenceName": "RestService2",
@@ -45,6 +39,12 @@
 						"referenceName": "RestService2",
 						"type": "LinkedServiceReference"
 					}
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
 				},
 				{
 					"name": "derivedColumn2"
@@ -65,19 +65,6 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
 				"     documentForm: 'arrayOfDocuments') ~> source1",
-				"source1 derive(Phone_Number = contact.phone_number,",
-				"          FullName = Firstname+Lastname,",
-				"          ReposRelativeURL = Firstname+Lastname+\"/repos\") ~> derivedColumn1",
-				"derivedColumn1 select(mapColumn(",
-				"          Firstname,",
-				"          ID,",
-				"          Lastname,",
-				"          Phone_Number,",
-				"          FullName,",
-				"          ReposRelativeURL",
-				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1",
 				"select1 call(output(",
 				"          body as (avatar_url as string, created_at as string, followers as string, following as string, id as string, location as string, login as string, name as string, node_id as string, public_repos as string, site_admin as string, updated_at as string)",
 				"     ),",
@@ -104,6 +91,19 @@
 				"     bodyColumnName: 'body2',",
 				"     requestFormat: ['type' -> 'json'],",
 				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'arrayOfDocuments']) ~> externalCall2",
+				"source1 derive(Phone_Number = contact.phone_number,",
+				"          FullName = \"/\"+Firstname+Lastname,",
+				"          ReposRelativeURL = \"/\"+Firstname+Lastname+\"/repos\") ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          Firstname,",
+				"          ID,",
+				"          Lastname,",
+				"          Phone_Number,",
+				"          FullName,",
+				"          ReposRelativeURL",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
 				"externalCall2 derive(Followers = body.followers,",
 				"          Following = body.following,",
 				"          GitHub_ID = body.id,",
