@@ -1,5 +1,6 @@
 {
 	"name": "AzureSqlDatabaseMain",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"parameters": {
 			"SecretKey": {

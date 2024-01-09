@@ -24,6 +24,8 @@
 		"folder": {
 			"name": "Activities/Azure Data Explorer"
 		},
-		"annotations": []
-	}
+		"annotations": [],
+		"lastPublishTime": "2024-01-03T13:40:29Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
 }
