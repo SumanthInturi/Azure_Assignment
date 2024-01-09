@@ -1,0 +1,27 @@
+{
+	"name": "AzureBlobStorage4",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"StorageSecretName": {
+				"type": "string",
+				"defaultValue": "storageactmain"
+			}
+		},
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault2",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().StorageSecretName",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"name": "abt-adf-training",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "547dc66f-b9a7-425e-90ba-d6933b27a9e1",
+		"tenantId": "da464968-10f5-4b7b-8217-d6ab822e3949"
+	}
+}
