@@ -6,7 +6,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "StorageActMain",
+						"referenceName": "DelimitedText1",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -15,59 +15,49 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "StorageActMain",
-						"type": "DatasetReference"
-					},
-					"name": "sink1"
-				},
-				{
-					"dataset": {
 						"referenceName": "DelimitedText1",
 						"type": "DatasetReference"
 					},
-					"name": "sink2"
+					"name": "sink1"
 				}
 			],
 			"transformations": [
 				{
-					"name": "split1"
+					"name": "externalCall1",
+					"linkedService": {
+						"referenceName": "RestService1",
+						"type": "LinkedServiceReference"
+					}
+				},
+				{
+					"name": "derivedColumn1"
 				}
 			],
 			"scriptLines": [
 				"source(output(",
-				"          ID as string,",
-				"          Date as string,",
-				"          FirstName as string,",
-				"          LastName as string,",
-				"          Address as string",
+				"          Firstname as string,",
+				"          Lastname as string,",
+				"          ID as short,",
+				"          contact__phone_number as long",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 split(equals(ID,'1'),",
-				"     disjoint: false) ~> split1@(ID, Date)",
-				"split1@ID sink(allowSchemaDrift: true,",
+				"derivedColumn1 call(allowSchemaDrift: true,",
+				"     format: 'rest',",
+				"     store: 'restservice',",
+				"     timeout: 30,",
+				"     requestInterval: 0,",
+				"     httpMethod: 'GET',",
+				"     rowRelativeUrl: 'UserRelativeURL',",
+				"     bodyColumnName: 'body',",
+				"     requestFormat: ['type' -> 'json'],",
+				"     responseFormat: ['type' -> 'json', 'documentForm' -> 'arrayOfDocuments']) ~> externalCall1",
+				"source1 derive(UserRelativeURL = \"/\"+Firstname+Lastname+\"/Repos\") ~> derivedColumn1",
+				"externalCall1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          ID as string,",
-				"          Date as string,",
-				"          FirstName as string,",
-				"          LastName as string,",
-				"          Address as string",
-				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1",
-				"split1@Date sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     input(",
-				"          ID as string,",
-				"          Date as string,",
-				"          FirstName as string,",
-				"          LastName as string,",
-				"          Address as string",
-				"     ),",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink2"
+				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
 		}
 	}

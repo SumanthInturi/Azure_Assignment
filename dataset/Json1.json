@@ -2,7 +2,7 @@
 	"name": "Json1",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureBlobStorage6",
+			"referenceName": "AzureBlobStorage1",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
@@ -14,16 +14,7 @@
 				"container": "mycontainer"
 			}
 		},
-		"schema": {
-			"type": "object",
-			"properties": {
-				"color": {
-					"type": "string"
-				},
-				"value": {
-					"type": "string"
-				}
-			}
-		}
-	}
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
 }
